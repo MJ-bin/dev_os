@@ -6,6 +6,14 @@
 
 SECTION .text     ; {Directive} text 섹션(세그먼트)을 정의
 
+    ; 리얼모드에서 즉시 세그먼트 레지스터(ds)에 값을 mov 할수 없다.
+    mov ax, 0xB800    ; AX 레지스터에 0xB800 복사
+    mov ds, ax        ; DS 세그먼트 레지스터에 AX 레지스터의 값(0xB800)을 복사
+
+    ; [ds로부터 offset] 에 값을 대입한다. 이때 []는 유효주소를 품는다.
+    mov byte [0x00], 'M'    ; DS:0x0000(= 0xB800:0x0000)에 'M' 기록
+    mov byte [0x01], 0x4A   ; DS:0x0001에 속성(0x4A) 기록
+
     jmp $         ; {Instruction} 현재 위치에서 무한 루프 수행(== while(1))
 
     times 510 - ($ - $$) db 0x00  ; {Directive}
