@@ -6,13 +6,20 @@
 
 SECTION .text     ; {Directive} text 섹션(세그먼트)을 정의
 
+    jmp 0x07C0:START ; BIOS가 부트로더를 로드할때, 물리주소 0x07C0:0x0000에 로드한다.
+    ; jmp X:Y 는 CS 레지스터에 X를, IP 레지스터에 Y를 설정한다. 이때 Y는 파일의 시작점 [ORG 0x00]로부터 떨어진 상대주소값.
+
+START:
+    mov ax, 0x07C0    ; AX 레지스터에 부트로더 시작주소 0x07C0 복사
+    mov ds, ax        ; DS 세그먼트 레지스터에 AX 레지스터의 값(0x07C0)을 복사
+
     ; 리얼모드에서 즉시 세그먼트 레지스터(ds)에 값을 mov 할수 없다.
     mov ax, 0xB800    ; AX 레지스터에 0xB800 복사
-    mov ds, ax        ; DS 세그먼트 레지스터에 AX 레지스터의 값(0xB800)을 복사
+    mov es, ax        ; ES 세그먼트 레지스터에 AX 레지스터의 값(0xB800)을 복사
 
     ; [ds로부터 offset] 에 값을 대입한다. 이때 []는 유효주소를 품는다.
-    mov byte [0x00], 'M'    ; DS:0x0000(= 0xB800:0x0000)에 'M' 기록
-    mov byte [0x01], 0x4A   ; DS:0x0001에 속성(0x4A) 기록
+    mov byte [es: 0x00], 'M'    ; ES:0x0000(= 0xB800:0x0000)에 'M' 기록
+    mov byte [es: 0x01], 0x4A   ; ES:0x0001에 속성(0x4A) 기록
 
     jmp $         ; {Instruction} 현재 위치에서 무한 루프 수행(== while(1))
 
