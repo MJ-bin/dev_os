@@ -9,6 +9,7 @@ SECTION .text     ; {Directive} text 섹션(세그먼트)을 정의
     jmp 0x07C0:START ; BIOS가 부트로더를 로드할때, 물리주소 0x07C0:0x0000에 로드한다.
     ; jmp X:Y 는 CS 레지스터에 X를, IP 레지스터에 Y를 설정한다. 이때 Y는 파일의 시작점 [ORG 0x00]로부터 떨어진 상대주소값.
 
+
 START:
     mov ax, 0x07C0    ; AX 레지스터에 부트로더 시작주소 0x07C0 복사
     mov ds, ax        ; DS 세그먼트 레지스터에 AX 레지스터의 값(0x07C0)을 복사
@@ -17,9 +18,43 @@ START:
     mov ax, 0xB800    ; AX 레지스터에 0xB800 복사
     mov es, ax        ; ES 세그먼트 레지스터에 AX 레지스터의 값(0xB800)을 복사
 
-    ; [ds로부터 offset] 에 값을 대입한다. 이때 []는 유효주소를 품는다.
-    mov byte [es: 0x00], 'M'    ; ES:0x0000(= 0xB800:0x0000)에 'M' 기록
-    mov byte [es: 0x01], 0x4A   ; ES:0x0001에 속성(0x4A) 기록
+    mov si, 0x00      ; SI 레지스터(문자열 원본 인덱스 레지스터)에 0x00 복사
+
+
+.SCREENCLEARLOOP:
+    mov byte [es: si], 0x00 
+    mov byte [es: si + 1], 0x0A
+    add si, 2
+    cmp si, 80 * 25 * 2
+    jl .SCREENCLEARLOOP
+
+    mov si, 0x00
+    mov di, 0x00
+
+
+.MESSAGELOOP:
+    mov cl, byte [ si + MESSAGE1 ] ; MESSAGE1의 어드레스에서 SI 레지스터 값만큼
+                                   ; 더한 위치의 문자를 CL 레지스터에 복사
+                                   ; CL 레지스터는 CX 레지스터의 하위 1바이트를 의미
+                                   ; 문자열은 1바이트면 충분하므로 CX 레지스터의 하위 1바이트만 사용
+
+    cmp cl, 0             ; 복사된 문자와 0을 비교
+    je .MESSAGEEND        ; 복사한 문자의 값이 0이면 문자열이 종료되었음을
+                         ; 의미하므로 .MESSAGEEND로 이동하여 문자 출력 종료
+
+    mov byte [ es: di ], cl ; 0이 아니라면 비디오 메모리 어드레스 0xB800:di에 문자를 출력
+
+    add si, 1             ; SI 레지스터에 1을 더하여 다음 문자열로 이동
+    add di, 2             ; DI 레지스터에 2를 더하여 비디오 메모리(0xB800:di)의 다음 문자 위치로 이동
+                          ; 비디오 메모리는 (문자, 속성)의 쌍으로 구성되므로 문자만 출력하려면, 2를 더해야 함
+
+    jmp .MESSAGELOOP      ; 메시지 출력 루프로 이동하여 다음 문자를 출력
+
+
+.MESSAGEEND:
+
+MESSAGE1:
+    db 'mjbin OS Boot Loader Start~!!', 0 ; 출력할 메시지 정의
 
     jmp $         ; {Instruction} 현재 위치에서 무한 루프 수행(== while(1))
 
