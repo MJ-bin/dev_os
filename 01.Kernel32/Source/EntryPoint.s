@@ -1,3 +1,5 @@
+; 이 파일은 보호모드 커널의 첫번째 512바이트로, 부트로더에 의해 0x10000 주소에 로드된다.
+
 [ORG 0x00]
 [BITS 16]
 
@@ -50,7 +52,7 @@ START:
         call PRINTMESSAGE    ; PRINTMESSAGE 함수 호출
         add esp, 12          ; 스택 포인터를 12만큼 증가시켜 스택을 정리한다.
 
-        jmp $                ; 현재 위치 무한 루프
+        jmp dword 0x08:0x10200  ; C 코드로 작성한 커널이 존재하는 Main.c의 시작점(0x10200)으로 jmp
 
     ;;;;;;;;;;;;;;;;;;;;;
     ; 함수 PRINTMESSAGE
