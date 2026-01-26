@@ -5,7 +5,7 @@ void kPrintString( int iX, int iY, const char* pcString );
 // Main함수: 엔트리포인트 함수(0x10200)
 void Main( void )
 {
-    kPrintString( 0, 3, "C Language Kernel Started!" );
+    kPrintString( 0, 4, "C Language Kernel Started!" );
 
     while( 1 ) ;
 }

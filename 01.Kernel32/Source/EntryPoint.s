@@ -47,7 +47,7 @@ START:
 
         ; 화면에 메세지를 출력하는 함수 호출
         push (SWITCHSUCCESSMESSAGE - $$ + 0x10000) ; 출력할 메세지 문자열 주소
-        push 0x02            ; Y 좌표
+        push 0x03            ; Y 좌표
         push 0x00            ; X 좌표
         call PRINTMESSAGE    ; PRINTMESSAGE 함수 호출
         add esp, 12          ; 스택 포인터를 12만큼 증가시켜 스택을 정리한다.

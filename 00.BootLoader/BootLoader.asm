@@ -142,8 +142,8 @@ READEND:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 push LOADINGCOMPLETEMESSAGE    ; 출력할 메시지의 어드레스를 스택에 삽입
-push 1                         ; 화면 Y 좌표(1)를 스택에 삽입
-push 20                        ; 화면 X 좌표(20)를 스택에 삽입
+push 2                         ; 화면 Y 좌표(1)를 스택에 삽입
+push 0                         ; 화면 X 좌표(20)를 스택에 삽입
 call PRINTMESSAGE              ; PRINTMESSAGE 함수 호출
 add sp, 6                      ; 삽입한 파라미터 제거
 
@@ -160,8 +160,8 @@ jmp 0x1000:0x0000
 ; 디스크 에러를 처리하는 함수
 HANDLEDISKERROR:
     push DISKERRORMESSAGE      ; 에러 문자열의 어드레스를 스택에 삽입
-    push 1                     ; 화면 Y 좌표(1)을 스택에 삽입
-    push 20                    ; 화면 X 좌표(20)을 스택에 삽입
+    push 2                     ; 화면 Y 좌표(1)을 스택에 삽입
+    push 0                     ; 화면 X 좌표(20)을 스택에 삽입
     call PRINTMESSAGE          ; PRINTMESSAGE 함수 호출
 
     jmp $                      ; 현재 위치에서 무한 루프 수행
