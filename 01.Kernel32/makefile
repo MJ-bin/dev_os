@@ -1,8 +1,16 @@
 # 0. 빌드를 위한 변수 설정
 NASM32 = nasm
 GCC32 = x86_64-pc-linux-gcc.exe -c -m32 -ffreestanding
-LD32 = x86_64-pc-linux-ld.exe -melf_i386 -T ./elf_i386.x -nostdlib -e Main -Ttext 0x10200
+LD32 = x86_64-pc-linux-ld.exe -melf_i386 -T ../elf_i386.x -nostdlib -e Main -Ttext 0x10200
 OBJCOPY32 = x86_64-pc-linux-objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
+
+# OS Detection for Linux
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+	GCC32 = gcc -c -m32 -ffreestanding
+	LD32 = ld -melf_i386 -T ../elf_i386.x -nostdlib -e Main -Ttext 0x10200
+	OBJCOPY32 = objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
+endif
 
 OBJECTDIRECTORY = Temp
 SOURCEDIRECTORY = Source
