@@ -35,7 +35,8 @@ Disk.img: 00.BootLoader/BootLoader.bin 01.Kernel32/Kernel32.bin
 	@echo ============= All Build Complete =============
 	@echo
 
-# make clean 시 00.BootLoader 디렉토리의 clean을 실행하고 Disk.img를 삭제한다.
+# make clean 시 00.BootLoader 디렉토리와 01.Kernel32 디렉토리의 clean을 실행하고 Disk.img를 삭제한다.
 clean:
 	make -C 00.BootLoader clean
+	make -C 01.Kernel32 clean
 	rm -f Disk.img

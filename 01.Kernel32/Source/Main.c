@@ -21,6 +21,6 @@ void kPrintString( int iX, int iY, const char* pcString )
     for( i = 0; pcString[ i ] != 0; i++ )
     {
         pstScreen[ i ].bCharacter = pcString[ i ];
-        pstScreen[ i ].bAttribute = 0x0F; // 색상도 추가해봄
+        pstScreen[ i ].bAttribute = 0xA0; // 색상도 추가해봄
     }
 }
