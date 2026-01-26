@@ -17,8 +17,8 @@
 // 비디오 모드 중 텍스트 모드 화면을 구성하는 자료구조(for C 소스코드)
 typedef struct kCharacterStruct
 {
-    BYTE bCharacter;
-    BYTE bAttribute;
+    BYTE bCharacter; // 문자
+    BYTE bAttribute; // 문자의 전경색, 배경색
 } CHARACTER;
 
 #pragma pack( pop )
