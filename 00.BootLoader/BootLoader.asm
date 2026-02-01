@@ -10,7 +10,7 @@ jmp 0x07C0:START ; BIOS가 부트로더를 로드할때, 물리주소 0x07C0:0x0
 ; jmp X:Y 는 CS 레지스터에 X를, IP 레지스터에 Y를 설정한다. 이때 Y는 파일의 시작점 [ORG 0x00]로부터 떨어진 상대주소값.
 
 ; os 이미지의 크기를 저장할 변수
-TOTALSECTORCOUNT:  dw 1024  ; 부트 로더를 제외한 MINT64 OS 이미지의 크기
+TOTALSECTORCOUNT:  dw 1024  ; 부트 로더를 제외한 MINT64 OS 이미지의 크기(bytes)
                             ; 최대 1152 섹터(0x90000byte)까지 가능
 
 ; [코드 영역]
