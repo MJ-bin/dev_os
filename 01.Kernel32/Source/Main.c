@@ -1,4 +1,5 @@
 #include "Types.h"
+#include "Page.h"
 
 void kPrintString( int iX, int iY, const char* pcString );
 BOOL kIsMemoryEnough(void); // 1~64MB 까지의 메모리가 존재하는지 확인하는 함수(1MB 단위로 Write-Read 테스트)
@@ -36,6 +37,11 @@ void Main( void )
     {
         kPrintString( 40, 6, "Pass" );
     }
+
+    // IA-32e 모드 커널을 위한 페이지 테이블 생성
+    kPrintString( 0, 7, "Initializing Page Tables...............[    ]" );
+    kInitializePageTables();
+    kPrintString( 40, 7, "Pass" );
 
     while( 1 ) ;
 }
