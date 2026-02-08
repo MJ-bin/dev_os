@@ -40,7 +40,7 @@ SETCR0:
 
     ; 커널 코드 세그먼트를 0x00을 기준으로 하는 것으로 교체하고 EIP의 값을 0x00을 기준으로 재설정
     ; CS 세그먼트 셀렉터 : EIP
-    jmp dword 0x08:(PROTECTEDMODE - $$ + 0x10000) ; 이 명령어에 의해 CS 세그먼트 디스크립터는 2번째 디스크립터인 코드 세그먼트 디스크립터를 가리킨다.
+    jmp dword 0x18:(PROTECTEDMODE - $$ + 0x10000) ; 이 명령어에 의해 CS 세그먼트 디스크립터는 2번째 디스크립터인 코드 세그먼트 디스크립터를 가리킨다.
                                                   ; 또한, 파일에서 PROTECTEDMODE의 offset을 구하고, 커널이 로드되는 구체적인 시작점인 0x10000 를 더한다.
 
 ;;;;;;;;;;;;;;;;;;;;;
@@ -49,7 +49,7 @@ SETCR0:
 [BITS 32]               ; 이하의 코드는 32비트 코드로 설정
 ; PROTECTEDMODE 라벨 하위의 명령어들로 cs 세그먼트 셀렉터를 제외한 모든 셀렉터들이 데이터 세그먼트 디스크립터를 가리키게 초기화한다.
 PROTECTEDMODE:
-    mov ax, 0x10        ; 보호 모드 커널용 데이터 세그먼트 디스크립터를 AX 레지스터에 저장
+    mov ax, 0x20        ; 보호 모드 커널용 데이터 세그먼트 디스크립터를 AX 레지스터에 저장
     mov ds, ax          ; DS 세그먼트 셀렉터에 설정
     mov es, ax          ; ES 세그먼트 셀렉터에 설정
     mov fs, ax          ; FS 세그먼트 셀렉터에 설정
@@ -67,7 +67,7 @@ PROTECTEDMODE:
     call PRINTMESSAGE    ; PRINTMESSAGE 함수 호출
     add esp, 12          ; 스택 포인터를 12만큼 증가시켜 스택을 정리한다.
 
-    jmp dword 0x08:0x10200  ; C 코드로 작성한 커널이 존재하는 Main.c의 시작점(0x10200)으로 jmp
+    jmp dword 0x18:0x10200  ; C 코드로 작성한 커널이 존재하는 Main.c의 시작점(0x10200)으로 jmp
 
 ;;;;;;;;;;;;;;;;;;;;;
 ; 함수 PRINTMESSAGE
@@ -153,6 +153,24 @@ GDT:
         db 0x00
         db 0x00
         db 0x00
+
+    ; IA-32e 모드용 코드 세그먼트 디스크립터
+    IA32E_CODEDESCRIPTOR:
+        dw 0xFFFF       ; Limit [15:0]
+        dw 0x0000       ; Base [15:0]
+        db 0x00         ; Base [23:16]
+        db 0x9A         ; P=1, DPL=0, Code Segment, Execute/Read
+        db 0xAF         ; G=1, D=0, L=1, Limit[19:16]
+        db 0x00         ; Base [31:24]
+
+    ; IA-32e 모드용 데이터 세그먼트 디스크립터
+    IA32E_DATADESCRIPTOR:
+        dw 0xFFFF       ; Limit [15:0]
+        dw 0x0000       ; Base [15:0]
+        db 0x00         ; Base [23:16]
+        db 0x92         ; P=1, DPL=0, Data Segment, Read/Write
+        db 0xAF         ; G=1, D=0, L=1, Limit[19:16]
+        db 0x00         ; Base [31:24]
 
     ; 보호 모드 커널용 코드 세그먼트 디스크립터
     CODEDESCRIPTOR:
