@@ -1,5 +1,6 @@
 #include "Types.h"
 #include "Page.h"
+#include "ModeSwitch.h"
 
 void kPrintString( int iX, int iY, const char* pcString );
 BOOL kIsMemoryEnough(void); // 1~64MB 까지의 메모리가 존재하는지 확인하는 함수(1MB 단위로 Write-Read 테스트)
@@ -10,6 +11,10 @@ BOOL kInitializeKernel64Area(void); // 1~6MB 사이의 메모리를 0으로 초�
 // Main함수: 엔트리포인트 함수(0x10200)
 void Main( void )
 {
+    DWORD dwEAX, dwEBX, dwECX, dwEDX;
+    char vcCPUVendorString[ 13 ] = {0, };
+    
+
     kPrintString( 0, 4, "C Language Kernel Started!" );
 
     // 1MB ~ 64MB 사이의 메모리가 존재하는지 확인하는 함수
@@ -42,6 +47,32 @@ void Main( void )
     kPrintString( 0, 7, "Initializing Page Tables...............[    ]" );
     kInitializePageTables();
     kPrintString( 40, 7, "Pass" );
+
+    // CPU 정보 확인
+    kReadCPUID( 0x00, &dwEAX, &dwEBX, &dwECX, &dwEDX );
+    *(DWORD*)vcCPUVendorString = dwEBX;
+    *( (DWORD*)vcCPUVendorString + 1 ) = dwEDX;
+    *( (DWORD*)vcCPUVendorString + 2 ) = dwECX;
+    kPrintString( 0, 8, "Processor Vendor String................[             ]" );
+    kPrintString( 40, 8, vcCPUVendorString );
+
+    // cpu 64비트 지원여부 확인    
+    kReadCPUID( 0x80000001, &dwEAX, &dwEBX, &dwECX, &dwEDX );
+    kPrintString( 0, 9, "Processor 64bit Support................[    ]" );
+    if (dwEDX & (1 << 29))
+    {
+        kPrintString( 40, 9, "Pass" );
+    }
+    else 
+    {
+        kPrintString( 40, 9, "Fail" );
+        kPrintString( 0, 10, "[ERROR] CPU DOES NOT SUPPORT 64BIT MODE, SO OS CANNOT RUN ON THIS CPU" );
+        while( 1 ) ;
+    }
+
+    // IA-32e 모드로 전환하고 64비트 커널을 수행
+    kPrintString( 0, 10, "Switching to IA-32e Mode and Executing 64bit Kernel.....[    ]" );
+    // kSwitchAndExecute64bitKernel(); // 우선 생략
 
     while( 1 ) ;
 }
