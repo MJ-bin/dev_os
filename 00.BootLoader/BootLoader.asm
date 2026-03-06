@@ -12,6 +12,7 @@ jmp 0x07C0:START ; BIOS가 부트로더를 로드할때, 물리주소 0x07C0:0x0
 ; os 이미지의 크기를 저장할 변수
 TOTALSECTORCOUNT:  dw 1024  ; 부트 로더를 제외한 MINT64 OS 이미지의 크기(bytes)
                             ; 최대 1152 섹터(0x90000byte)까지 가능
+KERNEL32SECTORCOUNT: dw 0x02; 보호모드 커널의 총 섹터 수
 
 ; [코드 영역]
 START:

@@ -6,8 +6,8 @@ void kPrintString( int iX, int iY, const char* pcString );
 // 아래 함수는 C 언어 커널의 시작 부분임
 void Main( void )
 {
-    kPrintString( 0, 11, "Switch To IA-32e Mode Success" );
-    kPrintString( 0, 12, "IA-32e C Language Kernel Start...........[Pass]" );
+    kPrintString( 0, 12, "Switch To IA-32e Mode Success" );
+    kPrintString( 0, 13, "IA-32e C Language Kernel Start...........[Pass]" );
 }
 
 // 문자열을 X, Y 위치에 출력
@@ -22,7 +22,7 @@ void kPrintString( int iX, int iY, const char* pcString )
     // NULL이 나올 때까지 문자열 출력
     for( i = 0; pcString[ i ] != 0; i++ )
     {
-        pstScreen[ i ].bCharactor = pcString[ i ];
-        pstScreen[ i ].bAttribute = 0x0A; // 색상도 추가해봄
+        pstScreen[ i ].bCharacter = pcString[ i ];
+        pstScreen[ i ].bAttribute = 0x05; // 색상도 추가해봄
     }
 }

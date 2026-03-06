@@ -1,13 +1,22 @@
-# 빌드 환경 및 규칙 설정
+# 0. 빌드를 위한 변수 설정
 NASM64 = nasm -f elf64
-GCC64 = x86_64-pc-linux-gcc.exe -c -m64 --freestanding
+GCC64 = x86_64-pc-linux-gcc.exe -c -m64 --ffreestanding
 LD64 = x86_64-pc-linux-ld.exe -melf_x86_64 -T ../elf_x86_64.x -nostdlib -e Main -Ttext 0x200000
 OBJCOPY64 = x86_64-pc-linux-objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
+
+# OS Detection for Linux
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+	GCC64 = gcc -c -m64 -ffreestanding
+	LD64 = ld -melf_x86_64 -T ../elf_x86_64.x -nostdlib -e Main -Ttext 0x200000
+	OBJCOPY64 = objcopy -j .text -j .data -j .rodata -j .bss -S -O binary
+endif
 
 OBJECTDIRECTORY = Temp
 SOURCEDIRECTORY = Source
 
-# 빌드 항목 및 빌드 방법 설정
+
+# 1. 빌드 방법 설정
 all: prepare Kernel64.bin
 
 prepare:
@@ -28,7 +37,7 @@ clean:
 	rm -f *.bin
 	rm -f $(OBJECTDIRECTORY)/*.*
 
-# Make에 의해 다시 호출되는 부분, Temp 디렉터리를 기준으로 수행됨
+# 2. Make에 의해 다시 호출되는 부분, Temp 디렉터리를 기준으로 수행됨
 # 빌드할 어셈블리어 엔트리 포인트 소스 파일 정의, Temp 디렉터리를 기준으로 설정
 ENTRYPOINTSOURCEFILE = ../$(SOURCEDIRECTORY)/EntryPoint.s
 ENTRYPOINTOBJECTFILE = EntryPoint.o
