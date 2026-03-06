@@ -1,16 +1,22 @@
 #include "Types.h"
 #include "Page.h"
+#include "ModeSwitch.h"
 
 void kPrintString( int iX, int iY, const char* pcString );
 BOOL kIsMemoryEnough(void); // 1~64MB 까지의 메모리가 존재하는지 확인하는 함수(1MB 단위로 Write-Read 테스트)
 BOOL kInitializeKernel64Area(void); // 1~6MB 사이의 메모리를 0으로 초기화(for IA-32e 커널)
 // bool 타입은 C99 freestanding에서 지원하지 않음, Types.h 에서 정의한 BOOL 타입을 사용
+void kCopyKernel64ImageTo2Mbyte(void); // 커널64 이미지(size:3sector)를 2MB 지점으로 복사하는 함수
 
 
 // Main함수: 엔트리포인트 함수(0x10200)
 void Main( void )
 {
-    kPrintString( 0, 4, "C Language Kernel Started!" );
+    DWORD dwEAX, dwEBX, dwECX, dwEDX;
+    char vcCPUVendorString[ 13 ] = {0, };
+    
+
+    kPrintString( 0, 4, "Proteced Mode C Language Kernel Started!" );
 
     // 1MB ~ 64MB 사이의 메모리가 존재하는지 확인하는 함수
     kPrintString( 0, 5, "Minimum Memory size(64MB) checking.....[    ]" );
@@ -43,6 +49,37 @@ void Main( void )
     kInitializePageTables();
     kPrintString( 40, 7, "Pass" );
 
+    // CPU 정보 확인
+    kReadCPUID( 0x00, &dwEAX, &dwEBX, &dwECX, &dwEDX );
+    *(DWORD*)vcCPUVendorString = dwEBX;
+    *( (DWORD*)vcCPUVendorString + 1 ) = dwEDX;
+    *( (DWORD*)vcCPUVendorString + 2 ) = dwECX;
+    kPrintString( 0, 8, "Processor Vendor String................[             ]" );
+    kPrintString( 40, 8, vcCPUVendorString );
+
+    // cpu 64비트 지원여부 확인    
+    kReadCPUID( 0x80000001, &dwEAX, &dwEBX, &dwECX, &dwEDX );
+    kPrintString( 0, 9, "Processor 64bit Support................[    ]" );
+    if (dwEDX & (1 << 29))
+    {
+        kPrintString( 40, 9, "Pass" );
+    }
+    else 
+    {
+        kPrintString( 40, 9, "Fail" );
+        kPrintString( 0, 10, "[ERROR] CPU DOES NOT SUPPORT 64BIT MODE, SO OS CANNOT RUN ON THIS CPU" );
+        while( 1 ) ;
+    }
+
+    // // IA-32e 모드 커널을 0x200000(2Mbyte) 로 cp
+    kPrintString( 0, 10, "Copy IA-32e Kernel To 2M Address.......[    ]" );
+    kCopyKernel64ImageTo2Mbyte();
+    kPrintString( 40, 10, "Pass" );
+
+    // IA-32e 모드로 전환하고 64비트 커널을 수행
+    kPrintString( 0, 11, "Switching to IA-32e Mode and Executing 64bit Kernel" );
+    kSwitchAndExecute64bitKernel();
+
     while( 1 ) ;
 }
 
@@ -60,7 +97,6 @@ void kPrintString( int iX, int iY, const char* pcString )
         pstScreen[ i ].bAttribute = 0xA0; // 색상도 추가해봄
     }
 }
-
 
 // 1MB ~ 64MB 사이의 메모리가 충분한지 확인하는 함수
 BOOL kIsMemoryEnough(void)
@@ -106,4 +142,28 @@ BOOL kInitializeKernel64Area(void)
         pdwCurrentAddress++;
     }
     return TRUE;
+}
+
+// IA-32e 모드 커널을 0x200000(2Mbyte) 어드레스에 복사
+void kCopyKernel64ImageTo2Mbyte( void )
+{
+    WORD wKernel32SectorCount, wTotalKernelSectorCount;
+    DWORD* pdwSourceAddress, * pdwDestinationAddress;
+    int i;
+
+    // 0x7C05에 총 커널 섹터 수, 0x7C07에 보호 모드 커널 섹터 수가 들어 있음(04.Utility/00.ImageMaker/ImageMaker.c:156)
+    wTotalKernelSectorCount = *( ( WORD* ) 0x7C05 );
+    wKernel32SectorCount = *( ( WORD* ) 0x7C07 );
+
+    pdwSourceAddress = ( DWORD* ) ( 0x10000 + ( wKernel32SectorCount * 512 ) );
+    pdwDestinationAddress = ( DWORD* ) 0x200000;
+
+    // IA-32e 모드 커널 섹터 크기만큼 복사
+    for( i = 0 ; i < 512 * ( wTotalKernelSectorCount - wKernel32SectorCount ) / 4 ;
+        i++ )
+    {
+        *pdwDestinationAddress = *pdwSourceAddress;
+        pdwDestinationAddress++;
+        pdwSourceAddress++;
+    }
 }
