@@ -2,3 +2,5 @@
 *.img
 *.o
 *.exe
+temp.c
+books/*
